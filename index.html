@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#93ae37">
+<meta name="description" content="Diário Literário para alunos do 6º ano">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Meu Diário">
+<title>📖 Meu Diário Literário</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Caveat:wght@400;700&family=Pacifico&family=Nunito:wght@400;600;700&family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --c1: #93ae37;
+    --c2: #adc24f;
+    --c3: #c7d768;
+    --c4: #e0eb80;
+    --c5: #faff98;
+    --dark: #3a4a0e;
+    --mid: #5a6e1a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(135deg, var(--c1), var(--c3), var(--c5));
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== SPLASH ===== */
+  #splash {
+    position: fixed; inset: 0; z-index: 999;
+    background: linear-gradient(160deg, var(--c1) 0%, var(--c3) 50%, var(--c5) 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    animation: fadeOut 0.5s ease 2.5s forwards;
+  }
+  #splash .book { font-size: 80px; animation: bounce 1s infinite; }
+  #splash h1 { font-family: 'Pacifico', cursive; color: white; font-size: 2.2rem; margin-top: 16px; text-shadow: 2px 3px 8px rgba(0,0,0,0.2); }
+  #splash .subtitle { color: rgba(255,255,255,0.95); margin-top: 6px; font-size: 1.05rem; font-family: 'Dancing Script', cursive; font-weight: 700; letter-spacing: 0.5px; }
+  #splash p { color: rgba(255,255,255,0.75); margin-top: 4px; font-size: 0.9rem; }
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+  @keyframes fadeOut { to { opacity:0; pointer-events:none; } }
+
+  /* ===== APP SHELL ===== */
+  #app { display: none; flex-direction: column; min-height: 100vh; }
+  body.ready #app { display: flex; }
+  body.ready #splash { display: none; }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(90deg, var(--c1), var(--c2));
+    color: white; padding: 12px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    position: sticky; top: 0; z-index: 100;
+  }
+  header h1 { font-family: 'Pacifico', cursive; font-size: 1.4rem; text-shadow: 1px 2px 4px rgba(0,0,0,0.2); }
+  header .btns { display: flex; gap: 8px; }
+  .hbtn {
+    background: rgba(255,255,255,0.25); border: none; border-radius: 50%;
+    width: 40px; height: 40px; font-size: 1.2rem; cursor: pointer;
+    transition: background 0.2s; display:flex; align-items:center; justify-content:center;
+  }
+  .hbtn:hover { background: rgba(255,255,255,0.4); }
+
+  /* ===== NAV TABS ===== */
+  nav {
+    display: flex; background: var(--dark); overflow-x: auto;
+  }
+  nav button {
+    flex: 1; min-width: 80px; padding: 10px 8px; border: none;
+    background: transparent; color: rgba(255,255,255,0.6);
+    font-family: 'Nunito', sans-serif; font-size: 0.78rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    border-bottom: 3px solid transparent;
+  }
+  nav button.active { color: var(--c5); border-bottom-color: var(--c5); background: rgba(255,255,255,0.08); }
+  nav button:hover { color: white; }
+
+  /* ===== MAIN ===== */
+  main { flex: 1; padding: 16px; max-width: 700px; margin: 0 auto; width: 100%; }
+
+  /* ===== PAGES ===== */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ===== THEME SELECTOR ===== */
+  .theme-bar {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px;
+    background: white; border-radius: 16px; padding: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  }
+  .theme-bar h3 { width: 100%; font-size: 0.85rem; color: var(--mid); margin-bottom: 4px; }
+  .theme-opt {
+    flex: 1; min-width: 80px; padding: 8px 6px; border: 2px solid transparent;
+    border-radius: 12px; cursor: pointer; text-align: center; font-size: 0.8rem;
+    font-family: 'Nunito', sans-serif; transition: all 0.2s; font-weight: 600;
+  }
+  .theme-opt.selected { border-color: var(--c1); transform: scale(1.05); }
+  .t-nature { background: linear-gradient(135deg,#e8f5e9,#c8e6c9); color: #2e7d32; }
+  .t-flowers { background: linear-gradient(135deg,#fce4ec,#f8bbd0); color: #c2185b; }
+  .t-stars { background: linear-gradient(135deg,#ede7f6,#d1c4e9); color: #512da8; }
+  .t-ocean { background: linear-gradient(135deg,#e3f2fd,#bbdefb); color: #1565c0; }
+  .t-fire { background: linear-gradient(135deg,#fff8e1,#ffe082); color: #f57f17; }
+
+  /* ===== DIARY PAPER ===== */
+  .paper-wrap { position: relative; }
+  .paper {
+    background: white; border-radius: 16px; padding: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    position: relative; overflow: hidden; min-height: 400px;
+    transition: all 0.3s;
+  }
+
+  /* Paper themes */
+  .paper.t-nature {
+    background: linear-gradient(180deg, #f1f8e9 0%, white 100%);
+    border-left: 6px solid #aed581;
+  }
+  .paper.t-flowers {
+    background: linear-gradient(180deg, #fce4ec 0%, white 100%);
+    border-left: 6px solid #f48fb1;
+  }
+  .paper.t-stars {
+    background: linear-gradient(180deg, #ede7f6 0%, white 100%);
+    border-left: 6px solid #b39ddb;
+  }
+  .paper.t-ocean {
+    background: linear-gradient(180deg, #e3f2fd 0%, white 100%);
+    border-left: 6px solid #90caf9;
+  }
+  .paper.t-fire {
+    background: linear-gradient(180deg, #fff8e1 0%, white 100%);
+    border-left: 6px solid #ffd54f;
+  }
+
+  /* Ruled lines */
+  .paper.lined { background-image: repeating-linear-gradient(transparent, transparent 27px, rgba(147,174,55,0.2) 28px); }
+  .paper.dotted { background-image: radial-gradient(circle, rgba(147,174,55,0.3) 1px, transparent 1px); background-size: 24px 24px; }
+
+  /* Corner ornament */
+  .paper::before, .paper::after {
+    content: attr(data-ornament); position: absolute; font-size: 2.5rem;
+    opacity: 0.12; pointer-events: none;
+  }
+  .paper::before { top: 8px; right: 12px; }
+  .paper::after { bottom: 8px; left: 12px; }
+
+  /* Date stamp */
+  .date-stamp {
+    font-family: 'Caveat', cursive; font-size: 0.9rem;
+    color: var(--mid); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+  }
+
+  /* Title input */
+  .entry-title {
+    width: 100%; border: none; outline: none; background: transparent;
+    font-family: 'Dancing Script', cursive; font-size: 1.6rem; font-weight: 700;
+    color: var(--dark); margin-bottom: 12px;
+    border-bottom: 2px dashed var(--c3); padding-bottom: 6px;
+  }
+  .entry-title::placeholder { color: var(--c3); }
+
+  /* Textarea */
+  .entry-body {
+    width: 100%; border: none; outline: none; background: transparent;
+    font-size: 1rem; line-height: 1.75; color: #333; resize: none;
+    min-height: 280px; font-family: 'Patrick Hand', cursive;
+  }
+
+  /* Font selector */
+  .font-bar {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
+    padding: 10px; background: var(--c5); border-radius: 12px;
+  }
+  .font-bar label { font-size: 0.75rem; color: var(--dark); font-weight: 700; width: 100%; }
+  .fbtn {
+    padding: 4px 10px; border: 2px solid var(--c3); border-radius: 20px;
+    background: white; cursor: pointer; font-size: 0.85rem; transition: all 0.2s;
+  }
+  .fbtn.active { background: var(--c1); color: white; border-color: var(--c1); }
+  .fbtn:nth-child(2) { font-family: 'Dancing Script', cursive; font-size: 1rem; }
+  .fbtn:nth-child(3) { font-family: 'Caveat', cursive; font-size: 1rem; }
+  .fbtn:nth-child(4) { font-family: 'Patrick Hand', cursive; }
+  .fbtn:nth-child(5) { font-family: 'Nunito', sans-serif; }
+  .fbtn:nth-child(6) { font-family: 'Pacifico', cursive; font-size: 0.8rem; }
+
+  /* Emoji panel */
+  .emoji-panel {
+    background: white; border-radius: 16px; padding: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 12px;
+  }
+  .emoji-panel h4 { font-size: 0.8rem; color: var(--mid); margin-bottom: 8px; }
+  .emoji-cats { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+  .ecat { padding: 3px 8px; border-radius: 12px; border: 1px solid var(--c3); background: white; cursor: pointer; font-size: 0.75rem; color: var(--mid); }
+  .ecat.active { background: var(--c3); color: var(--dark); }
+  .emojis { display: flex; flex-wrap: wrap; gap: 4px; max-height: 100px; overflow-y: auto; }
+  .emojis span { font-size: 1.4rem; cursor: pointer; padding: 2px; border-radius: 6px; transition: background 0.15s; }
+  .emojis span:hover { background: var(--c5); }
+
+  /* Toolbar */
+  .toolbar {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;
+    align-items: center;
+  }
+  .tbtn {
+    padding: 6px 14px; border-radius: 20px; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.82rem;
+    transition: all 0.2s;
+  }
+  .tbtn-save { background: var(--c1); color: white; }
+  .tbtn-save:hover { background: var(--dark); }
+  .tbtn-new { background: var(--c5); color: var(--dark); border: 2px solid var(--c3); }
+  .tbtn-del { background: #ffebee; color: #c62828; }
+  .tbtn-paper { background: var(--c4); color: var(--dark); }
+
+  /* Paper style toggles */
+  .paper-style-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .psbtn { padding: 4px 10px; border-radius: 20px; border: 2px solid var(--c3); background: white; cursor: pointer; font-size: 0.78rem; font-family: 'Nunito',sans-serif; transition: all 0.2s; }
+  .psbtn.active { background: var(--c2); color: white; border-color: var(--c2); }
+
+  /* ===== ENTRIES LIST ===== */
+  .entries-list { display: flex; flex-direction: column; gap: 12px; }
+  .entry-card {
+    background: white; border-radius: 14px; padding: 16px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08); cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 5px solid var(--c2);
+  }
+  .entry-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+  .entry-card h3 { font-family: 'Dancing Script', cursive; font-size: 1.3rem; color: var(--dark); }
+  .entry-card .meta { font-size: 0.75rem; color: #888; margin-top: 2px; }
+  .entry-card .preview { font-family: 'Patrick Hand', cursive; color: #555; font-size: 0.9rem; margin-top: 8px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .entry-card .tag { display:inline-block; padding:2px 8px; border-radius:10px; background:var(--c5); color:var(--dark); font-size:0.7rem; margin-top:6px; }
+
+  /* ===== STATS ===== */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .stat-card { background: white; border-radius: 14px; padding: 16px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+  .stat-card .num { font-family: 'Pacifico', cursive; font-size: 2.2rem; color: var(--c1); }
+  .stat-card .lbl { font-size: 0.8rem; color: #777; }
+  .achievement { background: white; border-radius: 14px; padding: 14px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.06); margin-bottom: 8px; }
+  .achievement .icon { font-size: 2rem; }
+  .achievement .info h4 { font-size: 0.95rem; color: var(--dark); }
+  .achievement .info p { font-size: 0.78rem; color: #888; }
+  .achievement.locked { opacity: 0.4; }
+
+  /* ===== MOOD ===== */
+  .mood-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .mood-btn { font-size: 1.6rem; background: white; border: 2px solid transparent; border-radius: 50%; width: 48px; height: 48px; cursor: pointer; transition: all 0.2s; display:flex; align-items:center; justify-content:center; }
+  .mood-btn.selected { border-color: var(--c1); background: var(--c5); transform: scale(1.15); }
+
+  /* ===== EMPTY STATE ===== */
+  .empty { text-align: center; padding: 40px 20px; }
+  .empty .icon { font-size: 4rem; }
+  .empty h3 { font-family: 'Dancing Script', cursive; font-size: 1.6rem; color: var(--dark); margin: 12px 0 8px; }
+  .empty p { color: #888; font-size: 0.9rem; }
+
+  /* ===== MODAL ===== */
+  .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; display:flex; align-items:center; justify-content:center; padding:16px; }
+  .modal { background:white; border-radius:20px; padding:24px; max-width:340px; width:100%; text-align:center; }
+  .modal h3 { font-family:'Dancing Script',cursive; font-size:1.5rem; color:var(--dark); margin-bottom:12px; }
+  .modal p { color:#555; font-size:0.9rem; margin-bottom:16px; }
+  .modal-btns { display:flex; gap:10px; justify-content:center; }
+  .mbtn { padding:8px 20px; border-radius:20px; border:none; cursor:pointer; font-family:'Nunito',sans-serif; font-weight:700; font-size:0.9rem; }
+  .mbtn-ok { background:var(--c1); color:white; }
+  .mbtn-cancel { background:#f5f5f5; color:#555; }
+
+  /* ===== TOAST ===== */
+  .toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--dark); color:white; padding:10px 20px; border-radius:20px; font-size:0.85rem; z-index:300; opacity:0; transition:all 0.3s; pointer-events:none; }
+  .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ===== SEARCH ===== */
+  .search-bar { display:flex; align-items:center; gap:8px; background:white; border-radius:30px; padding:8px 16px; box-shadow:0 2px 10px rgba(0,0,0,0.08); margin-bottom:16px; }
+  .search-bar input { border:none; outline:none; flex:1; font-family:'Nunito',sans-serif; font-size:0.9rem; }
+  .search-bar span { color:#aaa; }
+
+  /* ===== INSTALL BANNER ===== */
+  .install-banner {
+    background: linear-gradient(90deg, var(--c1), var(--c2));
+    color: white; padding: 12px 16px; display: flex; align-items: center;
+    justify-content: space-between; gap: 8px;
+    animation: slideDown 0.4s ease;
+  }
+  @keyframes slideDown { from{transform:translateY(-100%)} to{transform:translateY(0)} }
+  .install-banner p { font-size: 0.85rem; font-weight: 600; }
+  .install-banner button { background:white; color:var(--dark); border:none; border-radius:16px; padding:6px 14px; font-weight:700; cursor:pointer; font-size:0.82rem; white-space:nowrap; }
+  .ibclose { background:transparent!important; color:white!important; font-size:1.2rem; padding:4px!important; }
+
+  @media(max-width:400px) { main{padding:10px} header h1{font-size:1.1rem} }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="book">📖</div>
+  <h1>Meu Diário</h1>
+  <p>Literatura & Produção Textual · 6º Ano</p>
+</div>
+
+<!-- INSTALL BANNER -->
+<div class="install-banner" id="installBanner" style="display:none">
+  <p>📱 Instale como app no seu celular!</p>
+  <button id="installBtn">Instalar</button>
+  <button class="ibclose" id="installClose">✕</button>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div>
+      <h1>📖 Meu Diário</h1>
+      <div style="font-family:'Dancing Script',cursive;font-size:0.85rem;color:rgba(255,255,255,0.88);line-height:1.2">Literatura e Produção Textual</div>
+    </div>
+    <div class="btns">
+      <button class="hbtn" id="searchToggle" title="Buscar">🔍</button>
+      <button class="hbtn" onclick="showPage('new')" title="Nova entrada">✏️</button>
+    </div>
+  </header>
+
+  <nav>
+    <button class="active" onclick="showPage('home')">🏠 Início</button>
+    <button onclick="showPage('new')">✏️ Escrever</button>
+    <button onclick="showPage('entries')">📚 Entradas</button>
+    <button onclick="showPage('stats')">🌟 Conquistas</button>
+  </nav>
+
+  <main>
+    <!-- HOME -->
+    <div class="page active" id="page-home">
+      <div style="text-align:center;padding:20px 0 10px">
+        <div style="font-size:3rem">📖</div>
+        <h2 style="font-family:'Pacifico',cursive;color:var(--dark);font-size:1.6rem;margin:8px 0 4px">Olá, escritor(a)!</h2>
+        <p style="color:var(--mid);font-size:0.9rem" id="homeDate"></p>
+      </div>
+
+      <!-- Quick mood -->
+      <div style="background:white;border-radius:16px;padding:16px;margin:12px 0;box-shadow:0 2px 10px rgba(0,0,0,0.08)">
+        <h3 style="font-size:0.9rem;color:var(--mid);margin-bottom:10px">Como você está hoje?</h3>
+        <div class="mood-bar" id="homeMood">
+          <button class="mood-btn" onclick="setMood('😄','Feliz')">😄</button>
+          <button class="mood-btn" onclick="setMood('😊','Bem')">😊</button>
+          <button class="mood-btn" onclick="setMood('😐','Neutro')">😐</button>
+          <button class="mood-btn" onclick="setMood('😔','Triste')">😔</button>
+          <button class="mood-btn" onclick="setMood('😡','Irritado')">😡</button>
+          <button class="mood-btn" onclick="setMood('😴','Cansado')">😴</button>
+          <button class="mood-btn" onclick="setMood('🤩','Animado')">🤩</button>
+          <button class="mood-btn" onclick="setMood('😰','Ansioso')">😰</button>
+        </div>
+      </div>
+
+      <!-- Quick write -->
+      <div style="background:linear-gradient(135deg,var(--c1),var(--c3));border-radius:16px;padding:20px;color:white;cursor:pointer;text-align:center;" onclick="showPage('new')">
+        <div style="font-size:2rem">✏️</div>
+        <h3 style="font-family:'Dancing Script',cursive;font-size:1.4rem;margin:6px 0 4px">Escrever agora</h3>
+        <p style="opacity:0.85;font-size:0.85rem">O que passa pela sua cabeça hoje?</p>
+      </div>
+
+      <!-- Recent entries -->
+      <div style="margin-top:16px">
+        <h3 style="font-family:'Dancing Script',cursive;color:var(--dark);font-size:1.3rem;margin-bottom:10px">Entradas recentes</h3>
+        <div id="recentEntries"></div>
+      </div>
+    </div>
+
+    <!-- NEW ENTRY -->
+    <div class="page" id="page-new">
+      <!-- Theme -->
+      <div class="theme-bar">
+        <h3>🎨 Escolha o tema do papel</h3>
+        <button class="theme-opt t-nature selected" data-theme="t-nature" onclick="setTheme(this)">🌿 Natureza</button>
+        <button class="theme-opt t-flowers" data-theme="t-flowers" onclick="setTheme(this)">🌸 Flores</button>
+        <button class="theme-opt t-stars" data-theme="t-stars" onclick="setTheme(this)">⭐ Estrelas</button>
+        <button class="theme-opt t-ocean" data-theme="t-ocean" onclick="setTheme(this)">🌊 Oceano</button>
+        <button class="theme-opt t-fire" data-theme="t-fire" onclick="setTheme(this)">🔥 Sol</button>
+      </div>
+
+      <!-- Paper style -->
+      <div class="paper-style-row">
+        <button class="psbtn active" onclick="setPaperStyle('lined',this)">📏 Pautado</button>
+        <button class="psbtn" onclick="setPaperStyle('dotted',this)">⬤ Pontilhado</button>
+        <button class="psbtn" onclick="setPaperStyle('plain',this)">⬜ Liso</button>
+      </div>
+
+      <!-- Font bar -->
+      <div class="font-bar">
+        <label>✍️ Fonte:</label>
+        <button class="fbtn active" onclick="setFont('Patrick Hand',this)">Normal</button>
+        <button class="fbtn" onclick="setFont('Dancing Script',this)">Cursiva</button>
+        <button class="fbtn" onclick="setFont('Caveat',this)">Manuscrita</button>
+        <button class="fbtn" onclick="setFont('Nunito',this)">Moderna</button>
+        <button class="fbtn" onclick="setFont('Pacifico',this)">Alegre</button>
+      </div>
+
+      <!-- Mood for entry -->
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+        <span style="font-size:0.8rem;color:var(--mid);font-weight:700">Humor da entrada:</span>
+        <div class="mood-bar" id="entryMoodBar" style="gap:6px">
+          <button class="mood-btn" style="width:36px;height:36px;font-size:1.2rem" onclick="selectEntryMood(this,'😄')">😄</button>
+          <button class="mood-btn" style="width:36px;height:36px;font-size:1.2rem" onclick="selectEntryMood(this,'😊')">😊</button>
+          <button class="mood-btn" style="width:36px;height:36px;font-size:1.2rem" onclick="selectEntryMood(this,'😔')">😔</button>
+          <button class="mood-btn" style="width:36px;height:36px;font-size:1.2rem" onclick="selectEntryMood(this,'🤩')">🤩</button>
+          <button class="mood-btn" style="width:36px;height:36px;font-size:1.2rem" onclick="selectEntryMood(this,'😴')">😴</button>
+          <button class="mood-btn" style="width:36px;height:36px;font-size:1.2rem" onclick="selectEntryMood(this,'😰')">😰</button>
+        </div>
+      </div>
+
+      <!-- Paper -->
+      <div class="paper-wrap">
+        <div class="paper t-nature lined" id="diaryPaper" data-ornament="🌿">
+          <div class="date-stamp">📅 <span id="currentDate"></span></div>
+          <input type="text" class="entry-title" id="entryTitle" placeholder="Título da entrada...">
+          <textarea class="entry-body" id="entryBody" placeholder="Escreva o que quiser aqui... Hoje foi um dia especial porque..."></textarea>
+        </div>
+      </div>
+
+      <!-- Emoji panel -->
+      <div class="emoji-panel" style="margin-top:12px">
+        <h4>😊 Inserir emoji</h4>
+        <div class="emoji-cats" id="emojiCats"></div>
+        <div class="emojis" id="emojiGrid"></div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar" style="margin-top:12px">
+        <button class="tbtn tbtn-save" onclick="saveEntry()">💾 Salvar</button>
+        <button class="tbtn tbtn-new" onclick="newEntry()">🆕 Nova</button>
+        <button class="tbtn tbtn-del" onclick="confirmDelete()">🗑️ Apagar</button>
+      </div>
+    </div>
+
+    <!-- ENTRIES -->
+    <div class="page" id="page-entries">
+      <div class="search-bar" id="searchBarEl" style="display:none">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="Buscar nas entradas..." oninput="renderEntries()">
+      </div>
+      <h3 style="font-family:'Dancing Script',cursive;color:var(--dark);font-size:1.4rem;margin-bottom:14px">📚 Todas as entradas</h3>
+      <div class="entries-list" id="entriesList"></div>
+    </div>
+
+    <!-- STATS -->
+    <div class="page" id="page-stats">
+      <h3 style="font-family:'Dancing Script',cursive;color:var(--dark);font-size:1.6rem;margin-bottom:14px">🌟 Minhas Conquistas</h3>
+      <div class="stats-grid" id="statsGrid"></div>
+      <h4 style="font-family:'Nunito',sans-serif;color:var(--mid);font-size:0.9rem;margin:8px 0 10px">🏆 Troféus</h4>
+      <div id="achievementsList"></div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-backdrop" id="modal" style="display:none">
+  <div class="modal">
+    <h3>🗑️ Apagar entrada?</h3>
+    <p>Esta ação não pode ser desfeita.</p>
+    <div class="modal-btns">
+      <button class="mbtn mbtn-ok" onclick="deleteEntry()">Apagar</button>
+      <button class="mbtn mbtn-cancel" onclick="closeModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== DATA =====
+let entries = [];
+let currentId = null;
+let currentTheme = 't-nature';
+let currentFont = 'Patrick Hand';
+let currentPaperStyle = 'lined';
+let selectedEntryMood = '';
+let deferredPrompt = null;
+
+const ORNAMENTS = {
+  't-nature': '🌿', 't-flowers': '🌸', 't-stars': '⭐', 't-ocean': '🌊', 't-fire': '🔥'
+};
+
+const EMOJIS = {
+  '😊 Sentimentos': ['😄','😊','😍','🥰','😎','😜','😢','😭','😡','😰','🤩','😴','🤔','😏','🥺','😂','🤣','😇','🫶','💪'],
+  '🌸 Natureza': ['🌸','🌺','🌻','🌹','🌷','🍀','🌿','🍃','🦋','🐝','🌈','☀️','🌙','⭐','❄️','🌊','🏔️','🌴','🦜','🐠'],
+  '❤️ Amor': ['❤️','🧡','💛','💚','💙','💜','🖤','🤍','💖','💗','💓','💞','💕','💝','🫀','💌','💋','🫦','🥰','😘'],
+  '🎉 Festas': ['🎉','🎊','🎈','🎁','🎂','🍰','🧁','🎵','🎶','🎸','🎹','🎺','🥳','🎭','🎠','🎡','🎢','🏆','🥇','🎖️'],
+  '📚 Escola': ['📚','📖','✏️','📝','🖊️','📐','📏','🔬','🔭','🖥️','📱','🎒','🏫','👩‍🏫','👨‍🏫','📊','📈','🧮','💡','🔑'],
+  '🍕 Comidas': ['🍕','🍔','🍟','🌮','🍣','🍜','🍩','🍪','🍫','🍭','🎂','🍦','🥤','🧃','🍿','🥞','🧇','🍓','🍇','🍉'],
+};
+
+// ===== STORAGE =====
+function save() {
+  try { localStorage.setItem('diary_entries', JSON.stringify(entries)); } catch(e) {}
+}
+function load() {
+  try {
+    const d = localStorage.getItem('diary_entries');
+    if (d) entries = JSON.parse(d);
+  } catch(e) { entries = []; }
+}
+
+// ===== INIT =====
+function init() {
+  load();
+  buildEmojiPanel();
+  updateDate();
+  renderHome();
+  setTimeout(() => {
+    document.body.classList.add('ready');
+  }, 2800);
+}
+
+function updateDate() {
+  const now = new Date();
+  const opts = { weekday:'long', year:'numeric', month:'long', day:'numeric' };
+  const ds = now.toLocaleDateString('pt-BR', opts);
+  const el = document.getElementById('currentDate');
+  if (el) el.textContent = ds;
+  const hd = document.getElementById('homeDate');
+  if (hd) hd.textContent = ds.charAt(0).toUpperCase() + ds.slice(1);
+}
+
+// ===== PAGES =====
+const navBtns = () => document.querySelectorAll('nav button');
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  const page = document.getElementById('page-' + id);
+  if (page) page.classList.add('active');
+  const idx = {home:0,new:1,entries:2,stats:3}[id];
+  if (idx !== undefined) navBtns()[idx].classList.add('active');
+  if (id === 'home') renderHome();
+  if (id === 'entries') renderEntries();
+  if (id === 'stats') renderStats();
+  if (id === 'new' && !currentId) newEntry();
+}
+
+// ===== THEME =====
+function setTheme(el) {
+  document.querySelectorAll('.theme-opt').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  currentTheme = el.dataset.theme;
+  const paper = document.getElementById('diaryPaper');
+  paper.className = 'paper ' + currentTheme + ' ' + currentPaperStyle;
+  paper.setAttribute('data-ornament', ORNAMENTS[currentTheme]);
+}
+
+function setPaperStyle(style, el) {
+  document.querySelectorAll('.psbtn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentPaperStyle = style === 'plain' ? '' : style;
+  const paper = document.getElementById('diaryPaper');
+  paper.className = 'paper ' + currentTheme + (currentPaperStyle ? ' ' + currentPaperStyle : '');
+}
+
+function setFont(font, el) {
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentFont = font;
+  document.getElementById('entryBody').style.fontFamily = font + ', cursive';
+  document.getElementById('entryTitle').style.fontFamily = font + ', cursive';
+}
+
+function selectEntryMood(el, mood) {
+  document.querySelectorAll('#entryMoodBar .mood-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedEntryMood = mood;
+}
+
+// ===== EMOJIS =====
+function buildEmojiPanel() {
+  const cats = Object.keys(EMOJIS);
+  const catEl = document.getElementById('emojiCats');
+  const gridEl = document.getElementById('emojiGrid');
+  let activeCat = cats[0];
+  
+  function renderEmojis(cat) {
+    gridEl.innerHTML = EMOJIS[cat].map(e => `<span onclick="insertEmoji('${e}')">${e}</span>`).join('');
+  }
+  
+  catEl.innerHTML = cats.map((c,i) => `<button class="ecat${i===0?' active':''}" onclick="switchCat(this,'${c}')">${c.split(' ')[0]}</button>`).join('');
+  renderEmojis(activeCat);
+
+  window.switchCat = (el, cat) => {
+    document.querySelectorAll('.ecat').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderEmojis(cat);
+  };
+}
+
+function insertEmoji(e) {
+  const ta = document.getElementById('entryBody');
+  const s = ta.selectionStart, end = ta.selectionEnd;
+  ta.value = ta.value.slice(0,s) + e + ta.value.slice(end);
+  ta.selectionStart = ta.selectionEnd = s + e.length;
+  ta.focus();
+}
+
+// ===== ENTRIES =====
+function newEntry() {
+  currentId = null;
+  selectedEntryMood = '';
+  document.getElementById('entryTitle').value = '';
+  document.getElementById('entryBody').value = '';
+  document.querySelectorAll('#entryMoodBar .mood-btn').forEach(b => b.classList.remove('selected'));
+  updateDate();
+}
+
+function saveEntry() {
+  const title = document.getElementById('entryTitle').value.trim() || 'Sem título';
+  const body = document.getElementById('entryBody').value.trim();
+  if (!body) { showToast('✏️ Escreva algo antes de salvar!'); return; }
+  
+  const now = new Date();
+  const entry = {
+    id: currentId || Date.now(),
+    title,
+    body,
+    mood: selectedEntryMood,
+    theme: currentTheme,
+    font: currentFont,
+    date: now.toISOString(),
+    dateStr: now.toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit',year:'numeric'}),
+    words: body.split(/\s+/).filter(Boolean).length
+  };
+
+  if (currentId) {
+    const idx = entries.findIndex(e => e.id === currentId);
+    if (idx > -1) entries[idx] = entry;
+  } else {
+    entries.unshift(entry);
+    currentId = entry.id;
+  }
+  save();
+  showToast('💾 Entrada salva com sucesso!');
+  checkAchievements();
+}
+
+function loadEntry(id) {
+  const entry = entries.find(e => e.id === id);
+  if (!entry) return;
+  currentId = id;
+  selectedEntryMood = entry.mood || '';
+  document.getElementById('entryTitle').value = entry.title;
+  document.getElementById('entryBody').value = entry.body;
+  document.getElementById('entryBody').style.fontFamily = entry.font + ', cursive';
+  // Set theme
+  const themeBtn = document.querySelector(`[data-theme="${entry.theme}"]`);
+  if (themeBtn) setTheme(themeBtn);
+  if (entry.mood) {
+    document.querySelectorAll('#entryMoodBar .mood-btn').forEach(b => {
+      if (b.textContent === entry.mood) b.classList.add('selected');
+    });
+  }
+  showPage('new');
+}
+
+function confirmDelete() {
+  if (!currentId) { showToast('📝 Nenhuma entrada selecionada.'); return; }
+  document.getElementById('modal').style.display = 'flex';
+}
+function closeModal() { document.getElementById('modal').style.display = 'none'; }
+function deleteEntry() {
+  if (!currentId) return;
+  entries = entries.filter(e => e.id !== currentId);
+  save(); closeModal(); newEntry();
+  showToast('🗑️ Entrada apagada.');
+}
+
+// ===== RENDER =====
+function renderHome() {
+  const el = document.getElementById('recentEntries');
+  if (!entries.length) {
+    el.innerHTML = `<div class="empty"><div class="icon">📝</div><h3>Sem entradas ainda</h3><p>Que tal escrever a primeira?</p></div>`;
+    return;
+  }
+  el.innerHTML = entries.slice(0,3).map(e => entryCard(e)).join('');
+}
+
+function renderEntries() {
+  const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  const filtered = q ? entries.filter(e => e.title.toLowerCase().includes(q) || e.body.toLowerCase().includes(q)) : entries;
+  const el = document.getElementById('entriesList');
+  if (!filtered.length) {
+    el.innerHTML = `<div class="empty"><div class="icon">🔍</div><h3>Nada encontrado</h3><p>${q ? 'Tente outro termo.' : 'Ainda sem entradas!'}</p></div>`;
+    return;
+  }
+  el.innerHTML = filtered.map(e => entryCard(e)).join('');
+}
+
+function entryCard(e) {
+  const preview = e.body.slice(0,120).replace(/</g,'&lt;') + (e.body.length > 120 ? '...' : '');
+  return `<div class="entry-card" onclick="loadEntry(${e.id})">
+    <h3>${e.mood || ''} ${e.title}</h3>
+    <div class="meta">📅 ${e.dateStr} · ${e.words} palavras</div>
+    <div class="preview">${preview}</div>
+    <span class="tag">${ORNAMENTS[e.theme]||'📖'} ${e.theme?.replace('t-','') || ''}</span>
+  </div>`;
+}
+
+// ===== STATS =====
+const ACHIEVEMENTS = [
+  { id:'first', icon:'🌱', name:'Primeira Entrada!', desc:'Você escreveu sua primeira entrada.', check: ()=> entries.length >= 1 },
+  { id:'week', icon:'📅', name:'7 Dias Seguidos', desc:'Escreva por 7 dias diferentes.', check: ()=> uniqueDays() >= 7 },
+  { id:'writer', icon:'✍️', name:'Escritor(a) em Ascensão', desc:'5 entradas escritas.', check: ()=> entries.length >= 5 },
+  { id:'poet', icon:'📜', name:'Poeta Nato(a)', desc:'20 entradas escritas.', check: ()=> entries.length >= 20 },
+  { id:'verbose', icon:'💬', name:'Muito a Dizer!', desc:'Uma entrada com mais de 200 palavras.', check: ()=> entries.some(e=>e.words>=200) },
+  { id:'emoji', icon:'🎭', name:'Expressivo(a)', desc:'Use emojis em uma entrada.', check: ()=> entries.some(e=>/\p{Emoji}/u.test(e.body)) },
+];
+
+function uniqueDays() {
+  const days = new Set(entries.map(e => e.dateStr));
+  return days.size;
+}
+
+function checkAchievements() {
+  // Achievements are computed dynamically
+}
+
+function renderStats() {
+  const totalWords = entries.reduce((a,e)=>a+e.words,0);
+  const days = uniqueDays();
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="num">${entries.length}</div><div class="lbl">📖 Entradas</div></div>
+    <div class="stat-card"><div class="num">${totalWords}</div><div class="lbl">💬 Palavras</div></div>
+    <div class="stat-card"><div class="num">${days}</div><div class="lbl">📅 Dias ativos</div></div>
+    <div class="stat-card"><div class="num">${ACHIEVEMENTS.filter(a=>a.check()).length}</div><div class="lbl">🏆 Conquistas</div></div>
+  `;
+  document.getElementById('achievementsList').innerHTML = ACHIEVEMENTS.map(a => {
+    const ok = a.check();
+    return `<div class="achievement${ok?'':' locked'}">
+      <div class="icon">${a.icon}</div>
+      <div class="info"><h4>${a.name}${ok?' ✅':' 🔒'}</h4><p>${a.desc}</p></div>
+    </div>`;
+  }).join('');
+}
+
+// ===== MOOD =====
+function setMood(emoji, label) {
+  document.querySelectorAll('#homeMood .mood-btn').forEach(b => b.classList.remove('selected'));
+  event.target.classList.add('selected');
+  showToast(`${emoji} Humor registrado: ${label}`);
+}
+
+// ===== TOAST =====
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+// ===== SEARCH TOGGLE =====
+document.getElementById('searchToggle').onclick = () => {
+  showPage('entries');
+  const sb = document.getElementById('searchBarEl');
+  sb.style.display = sb.style.display === 'none' ? 'flex' : 'none';
+  if (sb.style.display === 'flex') document.getElementById('searchInput').focus();
+};
+
+// ===== PWA / INSTALL =====
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBanner').style.display = 'flex';
+});
+document.getElementById('installBtn').onclick = async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') showToast('🎉 App instalado!');
+  deferredPrompt = null;
+  document.getElementById('installBanner').style.display = 'none';
+};
+document.getElementById('installClose').onclick = () => {
+  document.getElementById('installBanner').style.display = 'none';
+};
+
+// Service Worker (inline as blob for artifact environment)
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'diary-v1';
+    const ASSETS = ['/'];
+    self.addEventListener('install', e => {
+      e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS).catch(()=>{})));
+      self.skipWaiting();
+    });
+    self.addEventListener('fetch', e => {
+      e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));
+    });
+  `;
+  const blob = new Blob([swCode], {type: 'application/javascript'});
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(()=>{});
+}
+
+init();
+</script>
+</body>
+</html>
